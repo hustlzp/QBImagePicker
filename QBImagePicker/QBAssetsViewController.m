@@ -66,6 +66,8 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
 @property (nonatomic, assign) BOOL disableScrollToBottom;
 @property (nonatomic, strong) NSIndexPath *lastSelectedItemIndexPath;
 
+@property (nonatomic, assign) BOOL didLayoutSubviews;
+
 @end
 
 @implementation QBAssetsViewController
@@ -102,16 +104,6 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
     [self updateDoneButtonState];
     [self updateSelectionInfo];
     [self.collectionView reloadData];
-    
-    // Scroll to bottom
-    if (self.fetchResult.count > 0 && self.isMovingToParentViewController && !self.disableScrollToBottom) {
-        // when presenting as a .FormSheet on iPad, the frame is not correct until just after viewWillAppear:
-        // dispatching to the main thread waits one run loop until the frame is update and the layout is complete
-        dispatch_async(dispatch_get_main_queue(), ^{
-            NSIndexPath *indexPath = [NSIndexPath indexPathForItem:(self.fetchResult.count - 1) inSection:0];
-            [self.collectionView scrollToItemAtIndexPath:indexPath atScrollPosition:UICollectionViewScrollPositionTop animated:NO];
-        });
-    }
 }
 
 - (void)viewWillDisappear:(BOOL)animated
@@ -128,6 +120,22 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
     self.disableScrollToBottom = NO;
     
     [self updateCachedAssets];
+}
+
+- (void)viewDidLayoutSubviews
+{
+    [super viewDidLayoutSubviews];
+
+    if (!self.didLayoutSubviews) {
+        // Scroll to bottom
+        if (self.fetchResult.count > 0 && !self.disableScrollToBottom) {
+            // call scrollToItemAtIndexPath until the frame is update and the layout is complete
+            NSIndexPath *indexPath = [NSIndexPath indexPathForItem:(self.fetchResult.count - 1) inSection:0];
+            [self.collectionView scrollToItemAtIndexPath:indexPath atScrollPosition:UICollectionViewScrollPositionTop animated:NO];
+        }
+        
+        self.didLayoutSubviews = YES;
+    }
 }
 
 - (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator
