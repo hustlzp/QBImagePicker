@@ -130,6 +130,7 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
         // Scroll to bottom
         if (self.fetchResult.count > 0 && !self.disableScrollToBottom) {
             // call scrollToItemAtIndexPath until the frame is update and the layout is complete
+            // See: https://stackoverflow.com/questions/14977896/xcode-collectionviewcontroller-scrolltoitematindexpath-not-working
             NSIndexPath *indexPath = [NSIndexPath indexPathForItem:(self.fetchResult.count - 1) inSection:0];
             [self.collectionView scrollToItemAtIndexPath:indexPath atScrollPosition:UICollectionViewScrollPositionTop animated:NO];
         }
